@@ -1,4 +1,14 @@
 #include <iostream>
+#include <random>
+#include <chrono>
+#include <vector>
+#include "Server.h"
+#include "ServerGenerator.h"
+#include "JobGenerator.h"
+
+using namespace std;
+
+void printServerList(const vector<Server>& serverList);
 
 /**
  * Point d'entrée du programme
@@ -24,6 +34,16 @@ int main(int argc, char **argv)
 	{
 		std::cout << "generate" << std::endl;
 		// Générer le fichier avec le nom dans argv[2] en utilisant les paramètres dans argv[3], argv[4]...
+
+		ServerGenerator serverGenerator;
+
+		vector<Server> cpuList(serverGenerator.generate(Server::Type::CPU));
+		vector<Server> gpuList(serverGenerator.generate(Server::Type::GPU));
+		vector<Server> ioList(serverGenerator.generate(Server::Type::IO));
+
+		printServerList(cpuList);
+		printServerList(gpuList);
+		printServerList(ioList);
 	}	
 	else if (mode == "")
 	{
@@ -39,4 +59,32 @@ int main(int argc, char **argv)
 	std::cin.ignore();
 
 	return 0;
+}
+
+void printServerList(const vector<Server>& serverList)
+{
+	string serverTypeString;
+	switch (serverList[0].getServerType())
+	{
+		case Server::Type::CPU :
+			serverTypeString = "CPU";
+			break;
+		case Server::Type::GPU :
+			serverTypeString = "GPU";
+			break;
+		case Server::Type::IO :
+			serverTypeString = "I/O";
+			break;
+	}
+
+	cout << serverTypeString.c_str() << " = [";
+	for (unsigned int i = 0; i < serverList.size(); ++i)
+	{
+		cout << serverList[i];
+		if (i == serverList.size() - 1)
+			cout << "]";
+		else
+			cout << ", ";
+	}
+	cout << endl;
 }
