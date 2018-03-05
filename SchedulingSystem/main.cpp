@@ -9,13 +9,14 @@
 using namespace std;
 
 void printServerList(const vector<Server>& serverList);
+void printJobList(const vector<Job>& jobList);
 
 /**
- * Point d'entrée du programme
+ * Point d'entrÃ©e du programme
  * 
  * @param mode string Mode d'utilisation du programme. Deux valeurs possibles : read, generate
- * @param filename string Nom du fichier à utiliser pour lire/générer un plan de scheduling
- * @param params int... Paramètres de génération du plan de scheduling (utilisables uniquement en mode generate
+ * @param filename string Nom du fichier Ã  utiliser pour lire/gÃ©nÃ©rer un plan de scheduling
+ * @param params int... ParamÃ¨tres de gÃ©nÃ©ration du plan de scheduling (utilisables uniquement en mode generate
  */
 int main(int argc, char **argv)
 {
@@ -28,22 +29,27 @@ int main(int argc, char **argv)
 	if (mode == "read")
 	{
 		std::cout << "read" << std::endl;
-		// Lire le fichier passé dans argv[2]
+		// Lire le fichier passÃ© dans argv[2]
 	}
 	else if (mode == "generate")
 	{
 		std::cout << "generate" << std::endl;
-		// Générer le fichier avec le nom dans argv[2] en utilisant les paramètres dans argv[3], argv[4]...
+		// GÃ©nÃ©rer le fichier avec le nom dans argv[2] en utilisant les paramÃ¨tres dans argv[3], argv[4]...
 
 		ServerGenerator serverGenerator;
+		JobGenerator jobGenerator;
 
 		vector<Server> cpuList(serverGenerator.generate(Server::Type::CPU));
 		vector<Server> gpuList(serverGenerator.generate(Server::Type::GPU));
 		vector<Server> ioList(serverGenerator.generate(Server::Type::IO));
+		
+		vector<Job> jobList(jobGenerator.generate());
 
 		printServerList(cpuList);
 		printServerList(gpuList);
 		printServerList(ioList);
+		
+		printJobList(jobList);
 	}	
 	else if (mode == "")
 	{
@@ -87,4 +93,12 @@ void printServerList(const vector<Server>& serverList)
 			cout << ", ";
 	}
 	cout << endl;
+}
+
+void printJobList(const vector<Job>& jobList)
+{
+	for(Job job : jobList)
+	{
+		cout << job << endl;
+	}
 }

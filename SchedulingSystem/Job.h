@@ -8,12 +8,17 @@ class Job
 {
     public :
         Job();
+		
+		void addTask(Task& Task, double dependencyTestRatio);
+		std::vector<Task*> getTasks() const;
+		
+		friend std::ostream& operator<<(std::ostream& stream, const Job& job);
 
     private :
-        static unsigned int totalJobNumber;
+        static unsigned int totalJobsNumber;
 
         unsigned int mJobNo;
-        std::vector<Task> mTasks;
+        std::vector<Task*> mInitialTasks;
 };
 
 #endif // JOB_H_INCLUDED

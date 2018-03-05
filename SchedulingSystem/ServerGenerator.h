@@ -12,12 +12,12 @@ class ServerGenerator
         std::vector<Server> generate(Server::Type serverType) const;
 
     private :
-        static const unsigned int MAX_SERVER_NUMBER;
+        static const unsigned int MAX_SERVERS_NUMBER;
 
-        unsigned int mServerNumber;
-        unsigned int mCpuNumber;
-        unsigned int mGpuNumber;
-        unsigned int mIoNumber;
+        unsigned int mServersNumber;
+        unsigned int mCpusNumber;
+        unsigned int mGpusNumber;
+        unsigned int mIosNumber;
 };
 
 #endif // SERVERGENERATOR_H_INCLUDED

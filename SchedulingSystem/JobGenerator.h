@@ -12,7 +12,7 @@ class JobGenerator
         std::vector<Job> generate() const;
 
     private :
-        static const unsigned int MAX_TASK_NUMBER;
+        static const unsigned int MAX_TASKS_NUMBER;
 };
 
 #endif // TASKGENERATOR_H_INCLUDED

@@ -1,15 +1,15 @@
 #include "Server.h"
 
-Server::Server(int operationNumber, char prefix, Type serverType) :
-mOperationNumber(operationNumber),
+Server::Server(int operationsNumber, char prefix, Type serverType) :
+mOperationsNumber(operationsNumber),
 mPrefix(prefix),
 mServerType(serverType)
 {
 }
 
-int Server::getOperationNumber() const
+int Server::getOperationsNumber() const
 {
-    return mOperationNumber;
+    return mOperationsNumber;
 }
 
 char Server::getPrefix() const
@@ -24,6 +24,6 @@ Server::Type Server::getServerType() const
 
 std::ostream& operator<<(std::ostream& stream, const Server& server)
 {
-    stream << server.mOperationNumber << server.mPrefix;
+    stream << server.mOperationsNumber << server.mPrefix;
     return stream;
 }

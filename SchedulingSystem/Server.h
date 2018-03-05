@@ -13,16 +13,16 @@ class Server
             IO,
         };
 
-        Server(int operationNumber, char prefix, Type serverType);
+        Server(int operationsNumber, char prefix, Type serverType);
 
-        int getOperationNumber() const;
+        int getOperationsNumber() const;
         char getPrefix() const;
         Type getServerType() const;
 
         friend std::ostream& operator<<(std::ostream& stream, const Server& server);
 
     private :
-        int mOperationNumber;
+        int mOperationsNumber;
         char mPrefix;
         Type mServerType;
 };

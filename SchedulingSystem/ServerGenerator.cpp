@@ -2,22 +2,22 @@
 #include <random>
 #include <chrono>
 
-const unsigned int ServerGenerator::MAX_SERVER_NUMBER = 100;
+const unsigned int ServerGenerator::MAX_SERVERS_NUMBER = 100;
 
 ServerGenerator::ServerGenerator()
 {
     std::default_random_engine randomEngine(std::chrono::system_clock::now().time_since_epoch().count());
 
-    std::uniform_int_distribution<unsigned int> distribServerNumber(3, MAX_SERVER_NUMBER);
-    mServerNumber = distribServerNumber(randomEngine);
+    std::uniform_int_distribution<unsigned int> distribServerNumber(3, MAX_SERVERS_NUMBER);
+    mServersNumber = distribServerNumber(randomEngine);
 
-    std::uniform_int_distribution<unsigned int> distribCpuNumber(static_cast<int>(0.25 * mServerNumber), static_cast<int>(0.5 * mServerNumber));
-    mCpuNumber = distribCpuNumber(randomEngine);
+    std::uniform_int_distribution<unsigned int> distribCpuNumber(static_cast<int>(0.25 * mServersNumber), static_cast<int>(0.5 * mServersNumber));
+    mCpusNumber = distribCpuNumber(randomEngine);
 
-    std::uniform_int_distribution<unsigned int> distribGpuNumber(static_cast<int>(0.25 * mServerNumber), static_cast<int>(0.75 * mServerNumber - mCpuNumber));
-    mGpuNumber = distribGpuNumber(randomEngine);
+    std::uniform_int_distribution<unsigned int> distribGpuNumber(static_cast<int>(0.25 * mServersNumber), static_cast<int>(0.75 * mServersNumber - mCpusNumber));
+    mGpusNumber = distribGpuNumber(randomEngine);
 
-    mIoNumber = mServerNumber - mCpuNumber - mGpuNumber;
+    mIosNumber = mServersNumber - mCpusNumber - mGpusNumber;
 }
 
 
@@ -34,17 +34,17 @@ std::vector<Server> ServerGenerator::generate(Server::Type serverType) const
         case Server::Type::CPU :
             maxLoad = 1000;
             prefix = 'G';
-            serverTypeNumber = mCpuNumber;
+            serverTypeNumber = mCpusNumber;
             break;
         case Server::Type::GPU :
             maxLoad = 1000;
             prefix = 'T';
-            serverTypeNumber = mGpuNumber;
+            serverTypeNumber = mGpusNumber;
             break;
         case Server::Type::IO :
             maxLoad = 10;
             prefix = 'G';
-            serverTypeNumber = mIoNumber;
+            serverTypeNumber = mIosNumber;
             break;
     }
 
