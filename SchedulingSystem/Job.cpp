@@ -29,7 +29,8 @@ void Job::addTask(Task& task, double dependencyTestRatio)
 				visitedParents.push_back(lastParent);
 				if(distribDependencyTest(randomEngine) < dependencyTestRatio)
 				{
-					lastParent->setDependentTask(task);
+					lastParent->setDependentTask(std::move(task));
+					return;
 				}
 			}
 		}
@@ -37,10 +38,13 @@ void Job::addTask(Task& task, double dependencyTestRatio)
 		{
 			if(distribDependencyTest(randomEngine) < dependencyTestRatio)
 			{
-				initialTask->setDependentTask(task);
+				initialTask->setDependentTask(std::move(task));
+				return;
 			}
 		}
 	}
+
+	mInitialTasks.push_back(&task);
 }
 
 std::vector<Task*> Job::getTasks() const

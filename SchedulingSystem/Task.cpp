@@ -16,9 +16,9 @@ void Task::setDependentTask(Task& task)
 	
 	Task* lastParent = getLastParent();
 	Task* thisTask = lastParent != nullptr ? lastParent : this;
-	lastParent->mParent = &task;
+	thisTask->mParent = &task;
 	
-	task.mDependencies.push_back(std::unique_ptr<Task>(std::move(lastParent)));
+	task.mDependencies.push_back(std::unique_ptr<Task>(std::move(thisTask)));
 }
 
 bool Task::hasParent() const

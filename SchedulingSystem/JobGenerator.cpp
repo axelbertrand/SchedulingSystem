@@ -15,8 +15,9 @@ std::vector<Job> JobGenerator::generate() const
 	
 	std::default_random_engine randomEngine(std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<unsigned int> distribTasksSize(1, 84600);
+	std::uniform_int_distribution<unsigned int> distribJobsNumber(1, MAX_TASKS_NUMBER);
 	
-	unsigned int remainingTasks = MAX_TASKS_NUMBER;
+	unsigned int remainingTasks = distribJobsNumber(randomEngine);
 	
 	while(remainingTasks > 0)
 	{
