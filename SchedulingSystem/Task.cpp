@@ -1,4 +1,5 @@
 #include "Task.h"
+#include <string>
 
 unsigned int Task::totalTasksNumber = 0;
 
@@ -11,14 +12,14 @@ mParent(nullptr)
 {
 }
 
-void Task::setDependentTask(Task& task)
+void Task::setDependentTask(std::shared_ptr<Task> task)
 {
 	
 	Task* lastParent = getLastParent();
-	Task* thisTask = lastParent != nullptr ? lastParent : this;
-	thisTask->mParent = &task;
+	Task* thisTask(lastParent != nullptr ? lastParent : this);
+	thisTask->mParent = task;
 	
-	task.mDependencies.push_back(std::unique_ptr<Task>(std::move(thisTask)));
+	task->mDependencies.push_back(*thisTask);
 }
 
 bool Task::hasParent() const
@@ -28,15 +29,21 @@ bool Task::hasParent() const
 
 Task* Task::getParent() const
 {
-	return mParent;
+	return mParent.get();
 }
 
 Task* Task::getLastParent() const
 {
-	if(mParent == nullptr)
-		return nullptr;
-	
-	return mParent->getLastParent();
+	Task* lastParent = getParent();
+	while (lastParent != nullptr)
+	{
+		if (lastParent->mParent == nullptr)
+			return lastParent;
+
+		lastParent = lastParent->getParent();
+	}	
+
+	return nullptr;
 }
 
 unsigned int Task::getTaskNo() const
@@ -66,12 +73,12 @@ std::ostream& operator<<(std::ostream& stream, const Task& task)
 			break;
 	}
 	
-	stream << serverTypeString.c_str() << ", " << task.mSize << prefix << ", ";
+	stream << serverTypeString << ", " << task.mSize << prefix << ", ";
 	
 	stream << "[";
 	for(int i = 0; i < task.mDependencies.size(); ++i)
 	{
-		stream << "T" << task.mDependencies[i]->mTaskNo;
+		stream << "T" << task.mDependencies[i].mTaskNo;
 		if(i < task.mDependencies.size() - 1)
 			stream << ",";
 	}

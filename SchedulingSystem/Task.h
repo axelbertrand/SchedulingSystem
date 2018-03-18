@@ -10,7 +10,7 @@ class Task
     public :
         Task(unsigned int size, Server::Type serverType);
 
-        void setDependentTask(Task& task);
+        void setDependentTask(std::shared_ptr<Task> task);
 		bool hasParent() const;
 		Task* getParent() const;
 		Task* getLastParent() const;
@@ -24,8 +24,8 @@ class Task
         unsigned int mTaskNo;
         unsigned int mSize;
         Server::Type mServerType;
-        std::vector<std::unique_ptr<Task>> mDependencies;
-		Task* mParent;
+        std::vector<Task> mDependencies;
+		std::shared_ptr<Task> mParent;
 };
 
 #endif // TASK_H_INCLUDED

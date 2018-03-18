@@ -9,7 +9,7 @@ class Job
     public :
         Job();
 		
-		void addTask(Task& Task, double dependencyTestRatio);
+		void addTask(std::shared_ptr<Task> task, double dependencyTestRatio);
 		std::vector<Task*> getTasks() const;
 		
 		friend std::ostream& operator<<(std::ostream& stream, const Job& job);
@@ -18,7 +18,7 @@ class Job
         static unsigned int totalJobsNumber;
 
         unsigned int mJobNo;
-        std::vector<Task*> mInitialTasks;
+        std::vector<std::shared_ptr<Task>> mInitialTasks;
 };
 
 #endif // JOB_H_INCLUDED

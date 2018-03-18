@@ -2,8 +2,9 @@
 
 #include <random>
 #include <chrono>
+#include <memory>
 
-const unsigned int JobGenerator::MAX_TASKS_NUMBER = 10000;
+const unsigned int JobGenerator::MAX_TASKS_NUMBER = 100;
 
 JobGenerator::JobGenerator()
 {
@@ -27,7 +28,7 @@ std::vector<Job> JobGenerator::generate() const
 		
 		std::uniform_int_distribution<unsigned int> distribDependencyTest(0, tasksNumber);
 
-		for(unsigned int i = 0; i < tasksNumber; ++i)
+		for(unsigned int i = 1; i <= tasksNumber; ++i)
 		{
 			Server::Type serverType;
 			
@@ -46,7 +47,7 @@ std::vector<Job> JobGenerator::generate() const
 					break;
 			}
 			
-			Task task(distribTasksSize(randomEngine), serverType);
+			std::shared_ptr<Task> task = std::make_shared<Task>(distribTasksSize(randomEngine), serverType);
 			job.addTask(task, static_cast<double>(i) / tasksNumber);
 		}
 		
