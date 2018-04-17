@@ -22,24 +22,18 @@ void Job::addTask(std::shared_ptr<Task> task, double dependencyTestRatio)
 	
 	for(auto initialTask : mInitialTasks)
 	{
-		if(initialTask->hasParent())
+		std::weak_ptr<Task> lastParent = initialTask->getLastParent();
+		std::shared_ptr<Task> currentTask = lastParent.lock();
+		if (!currentTask)
+			currentTask = initialTask;
+		
+		if(std::search_n(visitedParents.begin(), visitedParents.end(), 1, currentTask.get()) == visitedParents.end())
 		{
-			Task* lastParent = initialTask->getLastParent();
-			if(std::search_n(visitedParents.begin(), visitedParents.end(), 1, lastParent) == visitedParents.end())
-			{
-				visitedParents.push_back(lastParent);
-				if(distribDependencyTest(randomEngine) < dependencyTestRatio)
-				{
-					lastParent->setDependentTask(task);
-					isDependent = true;
-				}
-			}
-		}
-		else
-		{
+			visitedParents.push_back(currentTask.get());
 			if(distribDependencyTest(randomEngine) < dependencyTestRatio)
 			{
-				initialTask->setDependentTask(task);
+				currentTask->setDependentTask(task);
+				visitedParents.push_back(task.get());
 				isDependent = true;
 			}
 		}
@@ -49,12 +43,12 @@ void Job::addTask(std::shared_ptr<Task> task, double dependencyTestRatio)
 		mInitialTasks.push_back(task);
 }
 
-std::vector<Task*> Job::getTasks() const
+std::vector<std::shared_ptr<Task>> Job::getTasks() const
 {
-	std::vector<Task*> visitedTasks;
+	std::vector<std::shared_ptr<Task>> visitedTasks;
 	for (auto initialTask : mInitialTasks)
 	{
-		Task* currentTask = initialTask.get();
+		std::shared_ptr<Task> currentTask = initialTask;
 		do
 		{
 			if(std::search_n(visitedTasks.begin(), visitedTasks.end(), 1, currentTask) == visitedTasks.end())
@@ -67,7 +61,7 @@ std::vector<Task*> Job::getTasks() const
 
 			currentTask = currentTask->getParent();
 		}
-		while(currentTask->hasParent());
+		while(currentTask != nullptr);
 	}
 
 	return visitedTasks;
@@ -76,7 +70,7 @@ std::vector<Task*> Job::getTasks() const
 std::ostream& operator<<(std::ostream& stream, const Job& job)
 {
 	stream << "Job " << job.mJobNo << " = [";
-	std::vector<Task*> allTasks(job.getTasks());
+	std::vector<std::shared_ptr<Task>> allTasks(job.getTasks());
 	for(int i = 0; i < allTasks.size(); ++i)
 	{
 		stream << "T" << allTasks[i]->getTaskNo();
@@ -85,7 +79,7 @@ std::ostream& operator<<(std::ostream& stream, const Job& job)
 	}
 	stream << "]" << std::endl;
 	
-	for(int i = 0; i < allTasks.size(); ++i)
+	for (int i = 0; i < allTasks.size(); ++i)
 		stream << *allTasks[i] << std::endl;
 	
 	return stream;

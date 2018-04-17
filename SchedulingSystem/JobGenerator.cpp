@@ -4,7 +4,7 @@
 #include <chrono>
 #include <memory>
 
-const unsigned int JobGenerator::MAX_TASKS_NUMBER = 100;
+const unsigned int JobGenerator::MAX_TASKS_NUMBER = 10000;
 
 JobGenerator::JobGenerator()
 {

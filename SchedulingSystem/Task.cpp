@@ -8,18 +8,26 @@ mTaskNo(++totalTasksNumber),
 mSize(size),
 mServerType(serverType),
 mDependencies(),
-mParent(nullptr)
+mParent()
 {
+}
+
+std::shared_ptr<Task> Task::getSharedThis()
+{
+	return shared_from_this();
 }
 
 void Task::setDependentTask(std::shared_ptr<Task> task)
 {
-	
-	Task* lastParent = getLastParent();
-	Task* thisTask(lastParent != nullptr ? lastParent : this);
+	std::weak_ptr<Task> lastParent = getLastParent();
+
+	std::shared_ptr<Task> thisTask = lastParent.lock();
+	if (!thisTask)
+		thisTask = getSharedThis();
+
 	thisTask->mParent = task;
 	
-	task->mDependencies.push_back(*thisTask);
+	task->mDependencies.push_back(thisTask);
 }
 
 bool Task::hasParent() const
@@ -27,23 +35,23 @@ bool Task::hasParent() const
 	return mParent != nullptr;
 }
 
-Task* Task::getParent() const
+std::shared_ptr<Task> Task::getParent() const
 {
-	return mParent.get();
+	return mParent;
 }
 
-Task* Task::getLastParent() const
+std::shared_ptr<Task> Task::getLastParent() const
 {
-	Task* lastParent = getParent();
-	while (lastParent != nullptr)
+	std::shared_ptr<Task> currentTask = getParent();
+	while (currentTask != nullptr)
 	{
-		if (lastParent->mParent == nullptr)
-			return lastParent;
+		if (!currentTask->hasParent())
+			break;
 
-		lastParent = lastParent->getParent();
+		currentTask = currentTask->getParent();
 	}	
 
-	return nullptr;
+	return currentTask;
 }
 
 unsigned int Task::getTaskNo() const
@@ -78,9 +86,13 @@ std::ostream& operator<<(std::ostream& stream, const Task& task)
 	stream << "[";
 	for(int i = 0; i < task.mDependencies.size(); ++i)
 	{
-		stream << "T" << task.mDependencies[i].mTaskNo;
-		if(i < task.mDependencies.size() - 1)
-			stream << ",";
+		std::shared_ptr<Task> currentTask = task.mDependencies[i].lock();
+		if (currentTask)
+		{
+			stream << "T" << currentTask->mTaskNo;
+			if(i < task.mDependencies.size() - 1)
+				stream << ",";
+		}
 	}
 	stream << "]";
 	

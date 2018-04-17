@@ -5,15 +5,16 @@
 #include <memory>
 #include "Server.h"
 
-class Task
+class Task : public std::enable_shared_from_this<Task>
 {
     public :
         Task(unsigned int size, Server::Type serverType);
+		std::shared_ptr<Task> getSharedThis();
 
         void setDependentTask(std::shared_ptr<Task> task);
 		bool hasParent() const;
-		Task* getParent() const;
-		Task* getLastParent() const;
+		std::shared_ptr<Task> getParent() const;
+		std::shared_ptr<Task> getLastParent() const;
 		unsigned int getTaskNo() const;
 		
 		friend std::ostream& operator<<(std::ostream& stream, const Task& task);
@@ -24,7 +25,7 @@ class Task
         unsigned int mTaskNo;
         unsigned int mSize;
         Server::Type mServerType;
-        std::vector<Task> mDependencies;
+        std::vector<std::weak_ptr<Task>> mDependencies;
 		std::shared_ptr<Task> mParent;
 };
 

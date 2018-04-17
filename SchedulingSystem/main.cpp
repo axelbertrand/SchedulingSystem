@@ -1,15 +1,17 @@
 #include <iostream>
+#include <fstream>
 #include <random>
 #include <chrono>
 #include <vector>
+#include <string>
 #include "Server.h"
 #include "ServerGenerator.h"
 #include "JobGenerator.h"
 
 using namespace std;
 
-void printServerList(const vector<Server>& serverList);
-void printJobList(const vector<Job>& jobList);
+void printServerList(const vector<Server>& serverList, std::ostream& stream);
+void printJobList(const vector<Job>& jobList, std::ostream& stream);
 
 /**
  * Point d'entrée du programme
@@ -34,6 +36,7 @@ int main(int argc, char **argv)
 	else if (mode == "generate")
 	{
 		std::cout << "generate" << std::endl;
+		std::string fileName = argv[2];
 		// Générer le fichier avec le nom dans argv[2] en utilisant les paramètres dans argv[3], argv[4]...
 
 		ServerGenerator serverGenerator;
@@ -45,11 +48,19 @@ int main(int argc, char **argv)
 		
 		vector<Job> jobList(jobGenerator.generate());
 
-		printServerList(cpuList);
-		printServerList(gpuList);
-		printServerList(ioList);
-		
-		printJobList(jobList);
+		ofstream file(fileName, std::ios::out | std::ios::trunc);
+		if (file)
+		{
+			printServerList(cpuList, file);
+			printServerList(gpuList, file);
+			printServerList(ioList, file);
+
+			printJobList(jobList, file);
+		}
+		else
+		{
+			cerr << "Erreur d'ouverture du fichier " << fileName << endl;
+		}
 	}	
 	else if (mode == "")
 	{
@@ -67,7 +78,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void printServerList(const vector<Server>& serverList)
+void printServerList(const vector<Server>& serverList, std::ostream& stream)
 {
 	string serverTypeString;
 	switch (serverList[0].getServerType())
@@ -83,22 +94,22 @@ void printServerList(const vector<Server>& serverList)
 			break;
 	}
 
-	cout << serverTypeString.c_str() << " = [";
+	stream << serverTypeString.c_str() << " = [";
 	for (unsigned int i = 0; i < serverList.size(); ++i)
 	{
-		cout << serverList[i];
+		stream << serverList[i];
 		if (i == serverList.size() - 1)
-			cout << "]";
+			stream << "]";
 		else
-			cout << ", ";
+			stream << ", ";
 	}
-	cout << endl;
+	stream << endl;
 }
 
-void printJobList(const vector<Job>& jobList)
+void printJobList(const vector<Job>& jobList, std::ostream& stream)
 {
 	for(Job job : jobList)
 	{
-		cout << job << endl;
+		stream << job << endl;
 	}
 }
