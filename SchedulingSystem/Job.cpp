@@ -80,7 +80,7 @@ std::ostream& operator<<(std::ostream& stream, const Job& job)
 	stream << "]" << std::endl;
 	
 	for (int i = 0; i < allTasks.size(); ++i)
-		stream << *allTasks[i] << std::endl;
+		stream << '\t' << *allTasks[i] << std::endl;
 	
 	return stream;
 }
