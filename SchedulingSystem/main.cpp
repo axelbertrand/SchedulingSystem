@@ -13,7 +13,7 @@ using namespace std;
 
 void printServerList(const vector<Server>& serverList, std::ostream& stream);
 void printJobList(const vector<Job>& jobList, std::ostream& stream);
-vector<Server> readServers(std::ifstream& stream);
+vector<vector<Server>> readServers(std::ifstream& stream);
 vector<Job> readJobs(std::ifstream& stream);
 
 /**
@@ -40,8 +40,14 @@ int main(int argc, char **argv)
 		ifstream file(fileName, std::ios::in);
 		if (file)
 		{
-			vector<Server> serverList = readServers(file);
+			vector<vector<Server>> serverLists = readServers(file);
 			vector<Job> jobList = readJobs(file);
+
+			for (vector<Server> serverList : serverLists)
+			{
+				printServerList(serverList, cout);
+			}
+			printJobList(jobList, cout);
 		}
 		else
 		{
@@ -132,9 +138,11 @@ void printJobList(const vector<Job>& jobList, std::ostream& stream)
 	}
 }
 
-vector<Server> readServers(std::ifstream& stream)
+vector<vector<Server>> readServers(std::ifstream& stream)
 {
-	vector<Server> serverList;
+	vector<Server> cpuList;
+	vector<Server> gpuList;
+	vector<Server> ioList;
 
 	std::string serverString;
 	std::string line;
@@ -144,44 +152,53 @@ vector<Server> readServers(std::ifstream& stream)
 		getline(stream, line);
 		if (i != 0)
 		{
+			// Type de serveur
 			std::string serverTypeString = line.substr(1, 3);
-			Server::Type serverType;
-			
-			if (serverTypeString == "CPU")
-			{
-				serverType = Server::Type::CPU;
-			}
-			else if (serverTypeString == "GPU")
-			{
-				serverType = Server::Type::GPU;
-			}
-			else if (serverTypeString == "I/O")
-			{
-				serverType = Server::Type::IO;
-			}
 
-			std::string serverListString = line.substr(8, line.size() - 2);
+			// Capacités des serveurs
+			std::string serverListString = line.substr(8);
+			serverListString.erase(serverListString.end() - 1);
 			std::string delimiter = ", ";
 
 			size_t pos = 0;
 			std::string token;
-			while ((pos = serverListString.find(delimiter)) != std::string::npos) {
+			do
+			{
+				pos = serverListString.find(delimiter);
 				token = serverListString.substr(0, pos);
 				serverListString.erase(0, pos + delimiter.length());
 
-				stringstream ss(token.substr(0, token.size() - 2));
+				// Capacité du serveur
+				stringstream ss(token.substr(0, token.size() - 1));
 				int operationsNumber;
 				ss >> operationsNumber;
 
+				// Préfixe
 				char prefix = token[token.size() - 1];
 
-				Server server(operationsNumber, prefix, serverType);
-				serverList.push_back(server);
-			}
+				// Ajout du serveur à la liste
+				if (serverTypeString == "CPU")
+				{
+					Server server(operationsNumber, prefix, Server::Type::CPU);
+					cpuList.push_back(server);
+				}
+				else if (serverTypeString == "GPU")
+				{
+					Server server(operationsNumber, prefix, Server::Type::GPU);
+					gpuList.push_back(server);
+				}
+				else if (serverTypeString == "I/O")
+				{
+					Server server(operationsNumber, prefix, Server::Type::IO);
+					ioList.push_back(server);
+				}
+				
+			} while (pos != std::string::npos);
 		}
 	}
 
-	return serverList;
+	vector<vector<Server>> serverLists = { cpuList, gpuList, ioList };
+	return serverLists;
 }
 
 vector<Job> readJobs(std::ifstream& stream)
@@ -191,73 +208,83 @@ vector<Job> readJobs(std::ifstream& stream)
 	std::string line;
 	while (getline(stream, line))
 	{
-		if (line[0] != '\t')
+		if (line.empty())
+		{
+			continue;
+		}
+		else if (line[0] != '\t') // C'est un job
 		{
 			jobList.push_back(Job());
 		}
-		else
+		else // C'est une tâche
 		{
 			int i = 2;
 			while (line[i] != ' ')
 				++i;
 
-			std::string taskNumberString = line.substr(2, i - 2);
-			cout << taskNumberString << endl;
-			line.erase(0, i + 2);
+			line.erase(0, i + 3);
 
+			// Type de tâche, taille de la tâche, dépendences de la tâche
 			Server::Type serverType;
 			int operationsNumber;
+			std::vector<unsigned int> dependentTaskNumbers;
 
 			i = 0;
 			std::string delimiter = ", ";
 			size_t pos = 0;
 			std::string token;
-			/*while ((pos = line.find(delimiter)) != std::string::npos) {
+
+			std::string serverTypeString;
+			stringstream ss;
+			do
+			{
+				pos = line.find(delimiter);
 				token = line.substr(0, pos);
 				switch(i)
 				{
-				case 0 :
-					std::string serverTypeString = token.substr(0, 3);
-					if (serverTypeString == "CPU")
+				case 0 : // On récupère le type de tâche
+					if (token == "CPU")
 					{
 						serverType = Server::Type::CPU;
 					}
-					else if (serverTypeString == "GPU")
+					else if (token == "GPU")
 					{
 						serverType = Server::Type::GPU;
 					}
-					else if (serverTypeString == "I/O")
+					else if (token == "I/O")
 					{
 						serverType = Server::Type::IO;
 					}
 					break;
-				case 1 :
-					stringstream ss(token.substr(0, token.size() - 2));
-					int operationsNumber;
+				case 1 : // On récupère la taille de la tâche
+					ss.str(token.substr(0, token.size() - 1));
 					ss >> operationsNumber;
 					break;
-				case 3 :
+				case 2 : // On récupère les dépendences de la tâche
 					if (token.size() != 2)
 					{
 						std::string input = token.substr(1, token.size() - 2);
-						std::string d = ", ";
 						size_t p = 0;
-						std::string t;
-						while ((p = input.find(d)) != std::string::npos) {
+						do
+						{
+							p = input.find(delimiter);
+							stringstream ss(input.substr(1));
+							unsigned int taskNumber;
+							ss >> taskNumber;
+							dependentTaskNumbers.push_back(taskNumber);
 
-							token.erase(0, p + d.length());
-						}
+							token.erase(0, p + delimiter.length());
+						} while (p != std::string::npos);
 					}
 					break;
 				}
 				line.erase(0, pos + delimiter.length());
 
-				stringstream ss(token.substr(1));
-				int taskNumber;
-				ss >> taskNumber;
+				++i;
+			} while (pos != std::string::npos);
 
-
-			}*/
+			std::shared_ptr<Task> task = std::make_shared<Task>(operationsNumber, serverType);
+			jobList[jobList.size() - 1].addTask(task, dependentTaskNumbers);
 		}
 	}
 

@@ -43,6 +43,41 @@ void Job::addTask(std::shared_ptr<Task> task, double dependencyTestRatio)
 		mInitialTasks.push_back(task);
 }
 
+void Job::addTask(std::shared_ptr<Task> task, std::vector<unsigned int> dependentTaskNumbers)
+{
+	if (dependentTaskNumbers.empty())
+	{
+		mInitialTasks.push_back(task);
+		return;
+	}
+
+	std::vector<std::shared_ptr<Task>> visitedTasks;
+	for (auto initialTask : mInitialTasks)
+	{
+		std::shared_ptr<Task> currentTask = initialTask;
+		do
+		{
+			if (std::search_n(visitedTasks.begin(), visitedTasks.end(), 1, currentTask) == visitedTasks.end())
+			{
+				visitedTasks.push_back(currentTask);
+				for (unsigned int dependentTaskNumber : dependentTaskNumbers)
+				{
+					if (currentTask->getTaskNo() == dependentTaskNumber)
+					{
+						currentTask->setDependentTask(task);
+						break;
+					}
+				}
+			}
+
+			if (!currentTask->hasParent())
+				break;
+
+			currentTask = currentTask->getParent();
+		} while (currentTask != nullptr);
+	}
+}
+
 std::vector<std::shared_ptr<Task>> Job::getTasks() const
 {
 	std::vector<std::shared_ptr<Task>> visitedTasks;
@@ -63,6 +98,10 @@ std::vector<std::shared_ptr<Task>> Job::getTasks() const
 		}
 		while(currentTask != nullptr);
 	}
+
+	sort(visitedTasks.begin(), visitedTasks.end(), [](std::shared_ptr<Task> t1, std::shared_ptr<Task> t2) {
+		return t1->getTaskNo() < t2->getTaskNo();
+	});
 
 	return visitedTasks;
 }

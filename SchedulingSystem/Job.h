@@ -10,6 +10,7 @@ class Job
         Job();
 		
 		void addTask(std::shared_ptr<Task> task, double dependencyTestRatio);
+		void addTask(std::shared_ptr<Task> task, std::vector<unsigned int> dependentTaskNumbers);
 		std::vector<std::shared_ptr<Task>> getTasks() const;
 		
 		friend std::ostream& operator<<(std::ostream& stream, const Job& job);
